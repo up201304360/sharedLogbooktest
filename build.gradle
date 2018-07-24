@@ -1,0 +1,49 @@
+buildscript {
+    dependencies {
+        classpath group: 'de.dynamicfiles.projects.gradle.plugins', name: 'javafx-gradle-plugin', version: '8.8.2'
+
+        classpath group: 'com.google.code.gson', name:'gson', version: '2.8.5'
+
+        // https://mvnrepository.com/artifact/io.deepstream/deepstream.io-client-java
+        classpath group: 'io.deepstream', name: 'deepstream.io-client-java', version: '2.2.2'
+
+    }
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        jcenter()
+
+    }
+}
+apply plugin: 'java'
+
+apply plugin: 'javafx-gradle-plugin'
+
+
+jfx {
+    // minimal requirement for jfxJar-task
+    mainClass = 'sharedLogbooktest.src.main.java.example.MainApp'
+
+
+}
+
+repositories {
+
+    jcenter()
+
+}
+dependencies{
+    compile 'io.deepstream:deepstream.io-client-java:2.2.2'
+
+}
+
+repositories {
+
+    mavenCentral()
+    mavenLocal()
+
+}
+dependencies{
+    compile 'com.google.code.gson:gson:2.8.5'
+
+}

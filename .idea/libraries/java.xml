@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="java">
+    <CLASSES />
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/Downloads/deepstream.io-client-java-2.2.2.zip!/deepstream.io-client-java-2.2.2/src/main/java" />
+      <root url="jar://$USER_HOME$/Downloads/deepstream.io-client-java-2.2.2.zip!/deepstream.io-client-java-2.2.2/src/test/java" />
+      <root url="jar://$USER_HOME$/Downloads/deepstream.io-client-java-2.2.2.zip!/deepstream.io-client-java-2.2.2/src/testapplication/java" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="org.webjars.bower:github-com-deepstreamIO-deepstream-io-client-js:1.0.0" type="repository">
+    <properties maven-id="org.webjars.bower:github-com-deepstreamIO-deepstream-io-client-js:1.0.0" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/webjars/bower/github-com-deepstreamIO-deepstream-io-client-js/1.0.0/github-com-deepstreamIO-deepstream-io-client-js-1.0.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
