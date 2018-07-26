@@ -1,8 +1,8 @@
 package example;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.deepstream.DeepstreamClient;
-import io.deepstream.LoginResult;
 import io.deepstream.Record;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -20,12 +20,16 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class MainApp extends Application {
-    private String textWritten;
-    Record record;
-    DeepstreamClient client;
-    TextArea textArea;
+    private Record record;
+    private DeepstreamClient client;
+    private TextArea textArea;
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
     @Override
-    public void start(Stage primaryStage)  {
+    public void start(Stage primaryStage) {
 
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
@@ -38,11 +42,12 @@ public class MainApp extends Application {
         root.getChildren().add(new Label("Shared Debriefing" + "\n" + "Date " + dateFormat.format(date)));
 
 
-         textArea = new TextArea();
+        textArea = new TextArea();
         root.getChildren().add(textArea);
 
         try {
-            client = new DeepstreamClient( "localhost:6020");
+            //TODO change to IP
+            client = new DeepstreamClient("127.0.0.1:6020");
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
@@ -52,66 +57,57 @@ public class MainApp extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.show();
-        new Timer().schedule(
-                new TimerTask() {
 
-                    @Override
-                    public void run() {
-                        try {
-                            checkUpdates(textArea);
-                            updateText();
-                        } catch (URISyntaxException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }, 0, 500);
-    }
+        int delay = 5000;   // delay de 5 seg.
+        int interval = 1000;  // intervalo de 1 seg.
+        Timer timer = new Timer();
 
-    private void checkUpdates(TextArea textArea) throws URISyntaxException {
-        textWritten=  textArea.getText();
-        if(!textWritten.isEmpty())
-            sendText(textWritten);
-//vai vendo se tem texto escrito na textArea
-    }
-
-    private void sendText(String textToSend)  {
+        timer.scheduleAtFixedRate(new TimerTask() {
+            public void run() {
+                checkUpdates(textArea);
+                updateText();
+            }
+        }, delay, interval);
         client.login();
-        System.out.println(client.getConnectionState());
+    }
+
+    private void checkUpdates(TextArea textArea) {
+        String textWritten = textArea.getText();
+        if (!textWritten.isEmpty())
+            sendText(textWritten);
+    }
+
+    private void sendText(String textToSend) {
+
         JsonObject data = new JsonObject();
         data.addProperty("textToSend", textToSend);
         record = client.record.getRecord("textToSend");
         record.set(data);
-         System.out.println("record name" + record.name());
 
-
-                System.out.println("record not null");
-
-
-        System.out.println("sendText");
 
     }
 
+    private void updateText() {
+        if (record != null) {
 
-    public void updateText()  {
-        if(record!=null) {
             record.get(); // returns all record data as a JsonElement
-            record.get("textToSend"); // returns the JsonElement 'reading'
-            System.out.println("updateText111111111111");
+            System.out.println(record.get().getAsJsonObject());
+//            JsonElement elem = record.get("textToSend");
+
+            //  textArea.setText(elem.getAsString());
+
 
             //subscribe to changes made by you or other clients using .subscribe()
             record.subscribe((recordName, data) -> {
+                System.out.println("mudou");
+                // some value in the record has changed
+                JsonElement elem = record.get("textToSend");
 
-                System.out.println("recordName: " + recordName + " data " + data );
-                textArea.setText(recordName );
+                textArea.setText(elem.getAsString());
+                System.out.println("mudou");
+
             });
+
         }
-
-        System.out.println("updateText");
-
-
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }
