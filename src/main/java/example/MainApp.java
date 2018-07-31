@@ -1,8 +1,8 @@
 package example;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.deepstream.DeepstreamClient;
+import io.deepstream.DeepstreamFactory;
 import io.deepstream.Record;
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -21,8 +21,8 @@ import java.util.TimerTask;
 
 public class MainApp extends Application {
     private Record record;
-    private DeepstreamClient client;
     private TextArea textArea;
+    private DeepstreamClient client;
 
     public static void main(String[] args) {
         launch(args);
@@ -34,6 +34,14 @@ public class MainApp extends Application {
         DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
         Date date = new Date();
 
+        DeepstreamFactory deepstreamFactory = DeepstreamFactory.getInstance();
+        try {
+            client = deepstreamFactory.getClient("localhost:6020");
+            client.login();
+
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
 
         VBox root = new VBox();
         root.setPadding(new Insets(10));
@@ -45,12 +53,6 @@ public class MainApp extends Application {
         textArea = new TextArea();
         root.getChildren().add(textArea);
 
-        try {
-            //TODO change to IP
-            client = new DeepstreamClient("127.0.0.1:6020");
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
 
         Scene scene = new Scene(root, 500, 300);
         primaryStage.setTitle("Shared Logbook");
@@ -68,46 +70,77 @@ public class MainApp extends Application {
                 updateText();
             }
         }, delay, interval);
-        client.login();
     }
 
     private void checkUpdates(TextArea textArea) {
         String textWritten = textArea.getText();
-        if (!textWritten.isEmpty())
-            sendText(textWritten);
+        if (!textWritten.isEmpty()) {
+            JsonObject data = new JsonObject();
+            data.addProperty("textToSend", textWritten);
+            record = client.record.getRecord("textToSend");
+            record.set(data);
+        }
+        sendText(textWritten);
     }
 
     private void sendText(String textToSend) {
 
-        JsonObject data = new JsonObject();
-        data.addProperty("textToSend", textToSend);
-        record = client.record.getRecord("textToSend");
-        record.set(data);
+
+        client.event.emit("textToSend2", textToSend);
+
+
+        client.event.subscribe("textToSend2", (eventName, data1) -> {
+
+
+            if (data1 != null) {
+                textArea.setText(data1.toString());
+
+                //  changeString(data1);
+
+            }
+
+        });
 
 
     }
+
+    //todo testar se ele entra no client event subscribe se escrever na outra cobnsola em vez de ser na propria
 
     private void updateText() {
         if (record != null) {
+            System.out.println(record.get().toString() + " --------------");
 
             record.get(); // returns all record data as a JsonElement
-            System.out.println(record.get().getAsJsonObject());
-//            JsonElement elem = record.get("textToSend");
 
-            //  textArea.setText(elem.getAsString());
-
-
-            //subscribe to changes made by you or other clients using .subscribe()
             record.subscribe((recordName, data) -> {
-                System.out.println("mudou");
                 // some value in the record has changed
-                JsonElement elem = record.get("textToSend");
 
-                textArea.setText(elem.getAsString());
-                System.out.println("mudou");
+                sendText(data.toString());
+/*
+                record.subscribe((recordName, data) -> {
+                    // some value in the record has changed
+                    JsonElement elem = record.get("textToSend");
+                    textArea.setText( elem.getAsString());
+
+
+                });
+*/
+
 
             });
-
         }
+        }
+
+    private void changeString(Object data) {
+
+
+        String data2 = data.toString();
+        String s3 = data2.replace("\\", "");
+        int index = data2.indexOf(":");
+        String s4 = s3.substring(index + 2);
+        String fnal = s4.substring(0, s4.length() - 2);
+        textArea.setText(fnal);
+
     }
-}
+
+    }
